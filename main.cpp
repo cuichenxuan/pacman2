@@ -9,24 +9,24 @@ char tmp_map[18][32]; //a temporary map that used to calculate steps and walk pa
 //map
 char gameMap[18][32] = {
 	"+#############################+",
-	"|                             |",
-	"|                             |",
-	"|## ########### ##   #########|",
-	"|   |                         |",
-	"| | |### |  |           |     |",
-	"| |      |  | |###  |   |  |  |",
-	"| | #####|  | |      ## |     |",
-	"| |           |###  |      |  |",
-	"| |##### ###         ##       |",
-	"|          ######  ####### ###|",
-	"|                             |",
-	"|# ### ####      ###   #######|",
-	"|                             |",
-	"|      ###################    |",
-	"|                             |",
-	"|                             |",
-	"+#############################+"
-	};
+    "|                             |",
+    "|                             |",
+    "|## ########### ##   ###### ##|",
+    "|                             |",
+    "| |#######  |           |     |",
+    "| |         | |###      |  |  |",
+    "|   ######  |        ## |     |",
+    "| |         | |###         |  |",
+    "| |##### ###         ##       |",
+    "|            ####  ####### ###|",
+    "|                             |",
+    "|# ### ####      ###   #### ##|",
+    "|                             |",
+    "|      ###################    |",
+    "|                             |",
+    "|                             |",
+    "+#############################+"
+                        };
 bool play=true;
 //print map
 void ShowMap()
@@ -56,62 +56,109 @@ struct targetPath {//this is used for storing and later using the path between e
 	short y;
 };
 
-vector<targetPath> walk_queue;
+vector<targetPath> walk_queue1;
+vector<targetPath> walk_queue2;
 
-vector<walk> BFSArray;
+vector<walk> BFSArray1;//walk all map for enemy 1
+vector<walk> BFSArray2; // walk all map for enemy 2
 
-void fillTheMap( int x, int y, int back ){
+void fillTheMapEnemy1( int x, int y, int back ){
 	if( tmp_map[y][x] == ' ' || tmp_map[y][x] == '.' ){
 		tmp_map[y][x] = '#'; //set the position to # so that next round of path search it wont go back.
 		walk tmp;
 		tmp.x = x;
 		tmp.y = y;
 		tmp.back = back;
-		BFSArray.push_back( tmp ); //push back each every possible step
+		BFSArray1.push_back( tmp ); //push back each every possible step
 	}
 }
 
-void FindPath( int ex, int ey, int hx, int hy ){//everytime calling FindPath, the tmp_map is reset to map
+void FindPathEnemy1( int e1x, int e1y, int hx, int hy ){//everytime calling FindPath, the tmp_map is reset to map
 	memcpy( tmp_map, gameMap, sizeof(gameMap) );//copy map to another temporary 2d array called tmp_map
-	BFSArray.clear();
+	BFSArray1.clear();
 	walk currentEnemyPos;//store initial position of enemy
-	currentEnemyPos.x = ex;
-	currentEnemyPos.y = ey;
+	currentEnemyPos.x = e1x;
+	currentEnemyPos.y = e1y;
 	currentEnemyPos.back = -1;  //the initial position of enemy
-	BFSArray.push_back( currentEnemyPos );
+	BFSArray1.push_back( currentEnemyPos );
 
-	for(int i=0; i<BFSArray.size(); i++){//for loop that fill the map until we fint the hero
-		if( BFSArray[i].x == hx && BFSArray[i].y == hy ){ //while filling the map, if we found the target(Hero)
-			walk_queue.clear();
+	for(int i=0; i<BFSArray1.size(); i++){//for loop that fill the map until we fint the hero
+		if( BFSArray1[i].x == hx && BFSArray1[i].y == hy ){ //while filling the map, if we found the target(Hero)
+			walk_queue1.clear();
 			targetPath step;
-			while( BFSArray[i].back != -1 ){//before reaching the initial position of enemy itself
-				step.x = BFSArray[i].x;
-				step.y = BFSArray[i].y;
-				walk_queue.push_back( step );
-//importan! this lead the path from hero to enemy. back stores the position of previous step position in BFSArray.
-				i = BFSArray[i].back;
+			while( BFSArray1[i].back != -1 ){//before reaching the initial position of enemy itself
+				step.x = BFSArray1[i].x;
+				step.y = BFSArray1[i].y;
+				walk_queue1.push_back( step );
+//importan! this lead the path from hero to enemy. back stores the position of previous step position in BFSArray1.
+				i = BFSArray1[i].back;
 			}
 
 			break;
 		}
 
-		fillTheMap( BFSArray[i].x+1, BFSArray[i].y, i );
-		fillTheMap( BFSArray[i].x-1, BFSArray[i].y, i );
-		fillTheMap( BFSArray[i].x, BFSArray[i].y+1, i );
-		fillTheMap( BFSArray[i].x, BFSArray[i].y-1, i );
+		fillTheMapEnemy1( BFSArray1[i].x+1, BFSArray1[i].y, i );
+		fillTheMapEnemy1( BFSArray1[i].x-1, BFSArray1[i].y, i );
+		fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y+1, i );
+		fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y-1, i );
 	}
 
-	BFSArray.clear();
+	BFSArray1.clear();
 }
 
+void fillTheMapEnemy2( int x, int y, int back ){
+	if( tmp_map[y][x] == ' ' || tmp_map[y][x] == '.' ){
+		tmp_map[y][x] = '#'; //set the position to # so that next round of path search it wont go back.
+		walk tmp;
+		tmp.x = x;
+		tmp.y = y;
+		tmp.back = back;
+		BFSArray2.push_back( tmp ); //push back each every possible step
+	}
+}
+
+void FindPathEnemy2( int e2x, int e2y, int hx, int hy ){//everytime calling FindPath, the tmp_map is reset to map
+	memcpy( tmp_map, gameMap, sizeof(gameMap) );//copy map to another temporary 2d array called tmp_map
+	BFSArray2.clear();
+	walk currentEnemyPos;//store initial position of enemy
+	currentEnemyPos.x = e2x;
+	currentEnemyPos.y = e2y;
+	currentEnemyPos.back = -1;  //the initial position of enemy
+	BFSArray2.push_back( currentEnemyPos );
+
+	for(int i=0; i<BFSArray2.size(); i++){//for loop that fill the map until we fint the hero
+		if( BFSArray2[i].x == hx && BFSArray2[i].y == hy ){ //while filling the map, if we found the target(Hero)
+			walk_queue2.clear();
+			targetPath step;
+			while( BFSArray2[i].back != -1 ){//before reaching the initial position of enemy itself
+				step.x = BFSArray2[i].x;
+				step.y = BFSArray2[i].y;
+				walk_queue2.push_back( step );
+//importan! this lead the path from hero to enemy. back stores the position of previous step position in BFSArray1.
+				i = BFSArray2[i].back;
+			}
+
+			break;
+		}
+
+		fillTheMapEnemy2( BFSArray2[i].x+1, BFSArray2[i].y, i );
+		fillTheMapEnemy2( BFSArray2[i].x-1, BFSArray2[i].y, i );
+		fillTheMapEnemy2( BFSArray2[i].x, BFSArray2[i].y+1, i );
+		fillTheMapEnemy2( BFSArray2[i].x, BFSArray2[i].y-1, i );
+	}
+
+	BFSArray1.clear();
+}
 
 int main() {
     while(play) { //if later player lost and chose to quit (q) then play set to false.
         int hx = 15; // initialize hero x
         int hy = 16; // initialize hero y
 
-        int ex = 1; // initialize enemy x
-        int ey = 1; // initialize enemy y
+        int e1x = 1; // initialize first enemy x
+        int e1y = 1; // initialize first enemy y
+        int e2x = 29; // initialize second enemy x
+        int e2y = 1; // initialize second enemy y
 
         int pts = 0;  // initialize points
         int frame = 0; // starting frame. every time the thisRound loop restart, frame+1. it is for controlling speed of enemy
@@ -142,12 +189,13 @@ int main() {
         gotoxy( hx, hy );
         cout << "H";//locate and show hero
 
-        FindPath( ex,ey,hx,hy );//ex ey: enemy position, x y: hero position
+        FindPathEnemy1( e1x,e1y,hx,hy );//e1x e1y: enemy 1 position, x y: hero position
+        FindPathEnemy2( e2x,e2y,hx,hy ); //find the path for second enemy to reach hero
         bool thisRound=true;//start the new round. if later player is dead, then thisRound reset to false
 
         while(thisRound){
             gotoxy( 32, 1 ); cout << pts;//display score
-            Sleep( 100 ); //delay
+            Sleep( 90 ); //delay
             frame++;
             int old_hx = hx;//store current user position
             int old_hy = hy;
@@ -172,24 +220,37 @@ int main() {
             }
 
             if( old_hx != hx || old_hy != hy ){//if user moved(old position not equals to new position
-                FindPath( ex,ey,hx,hy );// then reset findpath)
+                FindPathEnemy1( e1x,e1y,hx,hy );// then reset findpath)
+                FindPathEnemy2( e2x,e2y,hx,hy );// refind path for second enemy
             }
             gotoxy( hx,hy ); cout << "H";
             //End of Updating the location of Hero
 
-            //start updating enemy position and placing . on that position
-            gameMap[ey][ex] = '.';//let original map has a dot there, then hero can eat it even if the map is refreshed (tmp_map)
-            gotoxy( ex, ey ); cout << ".";//put cursor there and display that dot
+            //start updating enemies' positions and placing . on that position
+            gameMap[e1y][e1x] = '.';//let original map has a dot there, then hero can eat it even if the map is refreshed (tmp_map)
+            gotoxy( e1x, e1y ); cout << ".";//put cursor there and display that dot
+            gameMap[e2y][e2x] = '.';//let original map has a dot there, then hero can eat it even if the map is refreshed (tmp_map)
+            gotoxy( e2x, e2y ); cout << ".";//put cursor there and display that dot
 
-            if( frame==speedmod && walk_queue.size() != 0 ){
-                frame=0;
-                ex = walk_queue.back().x;
-                ey = walk_queue.back().y;
-                walk_queue.pop_back();
+            if( frame==speedmod && walk_queue1.size() != 0 ){
+                frame=0; //reset frame, so it wont overflow
+                e1x = walk_queue1.back().x;
+                e1y = walk_queue1.back().y;
+                walk_queue1.pop_back();
+                int e2x_tmp=e2x; int e2y_tmp=e2y; //temporarily save the second enemy's location
+                e2x = walk_queue2.back().x;//update the second enemy
+                e2y = walk_queue2.back().y;
+                if(e1x==e2x&&e1y==e2y) {//if the updated second enemy's location is same as the first enemy's location
+                    e2x = e2x_tmp;//then the second enemy stop moving for one step if order to prevent colliding with the
+                    e2y = e2y_tmp;//first enemy
+                }
+                else {
+                    walk_queue2.pop_back();
+                }
             }
-            gotoxy( ex, ey ); cout << "E";
-
-            if( ex == hx && ey == hy ){//if enemy reaches the hero restart or quit
+            gotoxy( e1x, e1y ); cout << "E";
+            gotoxy( e2x, e2y ); cout << "E";
+            if((e1x == hx && e1y == hy) || (e2x == hx && e2y == hy) ){//if either enemy reaches the hero restart or quit
                 char decision;
                 system("cls");
                 cout<<"You Lose and your score is: "<<pts<<endl;
@@ -206,16 +267,16 @@ int main() {
                         "+#############################+",
                         "|                             |",
                         "|                             |",
-                        "|## ########### ##   #########|",
-                        "|   |                         |",
-                        "| | |### |  |           |     |",
-                        "| |      |  | |###  |   |  |  |",
-                        "| | #####|  | |      ## |     |",
-                        "| |           |###  |      |  |",
-                        "| |##### ###         ##       |",
-                        "|          ######  ####### ###|",
+                        "|## ########### ##   ###### ##|",
                         "|                             |",
-                        "|# ### ####      ###   #######|",
+                        "| |#######  |           |     |",
+                        "| |         | |###      |  |  |",
+                        "|   ######  |        ## |     |",
+                        "| |         | |###         |  |",
+                        "| |##### ###         ##       |",
+                        "|            ####  ####### ###|",
+                        "|                             |",
+                        "|# ### ####      ###   #### ##|",
                         "|                             |",
                         "|      ###################    |",
                         "|                             |",
