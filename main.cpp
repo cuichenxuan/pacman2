@@ -157,7 +157,11 @@ void FindPathEnemy2( int e2x, int e2y, int hx, int hy ){//everytime calling Find
 	BFSArray1.clear();
 }
 
-void Enemy1Escape(int e1x, int e1y, int hx, int hy) {
+void Enemy1Escape(int e1x, int e1y, int hx, int hy) {//escape algorithm for enemy to run away from hero in escape mode
+    if(e1x == hx && e1y == hy) {
+        return;
+    }
+
     char mapWithAvoidPath[18][32] = {
                             "+#############################+",//later after calculating the path from hero to enemy,
                             "|                             |",//draw that path with # on this map. and avoid that path
@@ -178,37 +182,36 @@ void Enemy1Escape(int e1x, int e1y, int hx, int hy) {
                             "|                             |",
                             "+#############################+"
                             };
+    BFSArray1.clear();
+    walk_queue1.clear();
+    walk currentEnemyPos;//store initial position of enemy
+    currentEnemyPos.x = e1x;
+    currentEnemyPos.y = e1y;
+    currentEnemyPos.back = -1;  //the initial position of enemy
+    BFSArray1.push_back( currentEnemyPos );
+    for(int i=0; i<BFSArray1.size(); i++){//for loop that fill the map until we fint the hero
+        if( BFSArray1[i].x == hx && BFSArray1[i].y == hy ){ //while filling the map, if we found the target(Hero)
+            do{
+                mapWithAvoidPath[BFSArray1[i].y][BFSArray1[i].x] = '#';//mark that path using #
+                i = BFSArray1[i].back;//so that later when calculating escaping route, enemy will avoid that
+            }while( BFSArray1[i].back != -1 );
+            break; //break the for loop that fill the map
+        }
+        fillTheMapEnemy1( BFSArray1[i].x+1, BFSArray1[i].y, i );
+        fillTheMapEnemy1( BFSArray1[i].x-1, BFSArray1[i].y, i );
+        fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y+1, i );
+        fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y-1, i );
+    }
+    mapWithAvoidPath[hy][hx] = '#';
+    memcpy( tmp_map, mapWithAvoidPath, sizeof(mapWithAvoidPath) );
+
     if(e1x<=15&&e1y<=8) {//enemy in sector 1
         if(hx<=15&&hy<=8) {//hero in sector 1(Same Sector)
             BFSArray1.clear();
             walk_queue1.clear();
-            walk currentEnemyPos;//store initial position of enemy
-            currentEnemyPos.x = e1x;
-            currentEnemyPos.y = e1y;
-            currentEnemyPos.back = -1;  //the initial position of enemy
             BFSArray1.push_back( currentEnemyPos );
 
-            for(int i=0; i<BFSArray1.size(); i++){//for loop that fill the map until we fint the hero
-                if( BFSArray1[i].x == hx && BFSArray1[i].y == hy ){ //while filling the map, if we found the target(Hero)
-                    while( BFSArray1[i].back != -1 ){
-                        mapWithAvoidPath[BFSArray1[i].y][BFSArray1[i].x] = '#';//mark that path using #
-                        i = BFSArray1[i].back;//so that later when calculating escaping route, enemy will avoid that
-                    }
-                    break; //break the for loop that fill the map
-                }
-
-                fillTheMapEnemy1( BFSArray1[i].x+1, BFSArray1[i].y, i );
-                fillTheMapEnemy1( BFSArray1[i].x-1, BFSArray1[i].y, i );
-                fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y+1, i );
-                fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y-1, i );
-            }
-
-            memcpy( tmp_map, mapWithAvoidPath, sizeof(mapWithAvoidPath) );
-            BFSArray1.clear();
-            walk_queue1.clear();
             //start calculating escaping route (enemy in sector 1, hero in sector 1, enemy escape to sector 2 or 3)
-            BFSArray1.push_back( currentEnemyPos );
-
             if(hx+hy>e1x+e1y) {//in the upper right position, then escape to sector 3 (downward)
                 for(int i=0; i<BFSArray1.size(); i++){//for loop that fill the map until we find the destination
                     if( BFSArray1[i].x == 1 && BFSArray1[i].y == 16 ){ //reached destination: sector 3 corner (lower left)
@@ -252,36 +255,10 @@ void Enemy1Escape(int e1x, int e1y, int hx, int hy) {
         }//hero in sector 1. end
 
         else if(hx>15&&hy<=8) {//hero in sector 2
-            //first calculate route that hero chases enemy
             BFSArray1.clear();
             walk_queue1.clear();
-            walk currentEnemyPos;//store initial position of enemy
-            currentEnemyPos.x = e1x;
-            currentEnemyPos.y = e1y;
-            currentEnemyPos.back = -1;  //the initial position of enemy
             BFSArray1.push_back( currentEnemyPos );
-
-            for(int i=0; i<BFSArray1.size(); i++){//for loop that fill the map until we fint the hero
-                if( BFSArray1[i].x == hx && BFSArray1[i].y == hy ){ //while filling the map, if we found the target(Hero)
-                    while( BFSArray1[i].back != -1 ){
-                        mapWithAvoidPath[BFSArray1[i].y][BFSArray1[i].x] = '#';//mark that path using #
-                        i = BFSArray1[i].back;//so that later when calculating escaping route, enemy will avoid that
-                    }
-                    break; //break the for loop that fill the map
-                }
-
-                fillTheMapEnemy1( BFSArray1[i].x+1, BFSArray1[i].y, i );
-                fillTheMapEnemy1( BFSArray1[i].x-1, BFSArray1[i].y, i );
-                fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y+1, i );
-                fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y-1, i );
-            }
-
-            memcpy( tmp_map, mapWithAvoidPath, sizeof(mapWithAvoidPath) );
-            BFSArray1.clear();
-            walk_queue1.clear();
             //start calculating escaping route (enemy in sector 1, hero in sector 2, enemy escape to sector 3)
-            BFSArray1.push_back( currentEnemyPos );
-
             for(int i=0; i<BFSArray1.size(); i++){//for loop that fill the map until we find the destination
                 if( BFSArray1[i].x == 1 && BFSArray1[i].y == 16 ){ //reached destination: sector 3 corner (left bottom)
                     targetPath step;
@@ -306,33 +283,8 @@ void Enemy1Escape(int e1x, int e1y, int hx, int hy) {
         else if(hx<=15&&hy>8) {//hero in sector 3
             BFSArray1.clear();
             walk_queue1.clear();
-            walk currentEnemyPos;//store initial position of enemy
-            currentEnemyPos.x = e1x;
-            currentEnemyPos.y = e1y;
-            currentEnemyPos.back = -1;  //the initial position of enemy
             BFSArray1.push_back( currentEnemyPos );
-
-            for(int i=0; i<BFSArray1.size(); i++){//for loop that fill the map until we fint the hero
-                if( BFSArray1[i].x == hx && BFSArray1[i].y == hy ){ //while filling the map, if we found the target(Hero)
-                    while( BFSArray1[i].back != -1 ){
-                        mapWithAvoidPath[BFSArray1[i].y][BFSArray1[i].x] = '#';//mark that path using #
-                        i = BFSArray1[i].back;//so that later when calculating escaping route, enemy will avoid that
-                    }
-                    break; //break the for loop that fill the map
-                }
-
-                fillTheMapEnemy1( BFSArray1[i].x+1, BFSArray1[i].y, i );
-                fillTheMapEnemy1( BFSArray1[i].x-1, BFSArray1[i].y, i );
-                fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y+1, i );
-                fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y-1, i );
-            }
-
-            memcpy( tmp_map, mapWithAvoidPath, sizeof(mapWithAvoidPath) );
-            BFSArray1.clear();
-            walk_queue1.clear();
-            //start calculating escaping route (enemy in sector 1, hero in sector 3, enemy escape to sector 2)
-            BFSArray1.push_back( currentEnemyPos );
-
+            //start calculating escaping route (enemy in sector 1, hero in sector 2, enemy escape to sector 3)
             for(int i=0; i<BFSArray1.size(); i++){//for loop that fill the map until we find the destination
                 if( BFSArray1[i].x == 29 && BFSArray1[i].y == 1 ){ //reached destination: sector 2 corner (upper right)
                     targetPath step;
@@ -357,33 +309,8 @@ void Enemy1Escape(int e1x, int e1y, int hx, int hy) {
         else if(hx>15&&hy>8) {//hero in sector 4
             BFSArray1.clear();
             walk_queue1.clear();
-            walk currentEnemyPos;//store initial position of enemy
-            currentEnemyPos.x = e1x;
-            currentEnemyPos.y = e1y;
-            currentEnemyPos.back = -1;  //the initial position of enemy
             BFSArray1.push_back( currentEnemyPos );
-
-            for(int i=0; i<BFSArray1.size(); i++){//for loop that fill the map until we fint the hero
-                if( BFSArray1[i].x == hx && BFSArray1[i].y == hy ){ //while filling the map, if we found the target(Hero)
-                    while( BFSArray1[i].back != -1 ){
-                        mapWithAvoidPath[BFSArray1[i].y][BFSArray1[i].x] = '#';//mark that path using #
-                        i = BFSArray1[i].back;//so that later when calculating escaping route, enemy will avoid that
-                    }
-                    break; //break the for loop that fill the map
-                }
-
-                fillTheMapEnemy1( BFSArray1[i].x+1, BFSArray1[i].y, i );
-                fillTheMapEnemy1( BFSArray1[i].x-1, BFSArray1[i].y, i );
-                fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y+1, i );
-                fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y-1, i );
-            }
-
-            memcpy( tmp_map, mapWithAvoidPath, sizeof(mapWithAvoidPath) );
-            BFSArray1.clear();
-            walk_queue1.clear();
-            //start calculating escaping route (enemy in sector 1, hero in sector 4, enemy escape to sector 1)
-            BFSArray1.push_back( currentEnemyPos );
-
+            //start calculating escaping route (enemy in sector 1, hero in sector 2, enemy escape to sector 3)
             for(int i=0; i<BFSArray1.size(); i++){//for loop that fill the map until we find the destination
                 if( BFSArray1[i].x == 1 && BFSArray1[i].y == 1 ){ //reached destination: sector 1 corner (upper left)
                     targetPath step;
@@ -410,33 +337,8 @@ void Enemy1Escape(int e1x, int e1y, int hx, int hy) {
         if(hx<=15&&hy<=8) {//hero in sector 1
             BFSArray1.clear();
             walk_queue1.clear();
-            walk currentEnemyPos;//store initial position of enemy
-            currentEnemyPos.x = e1x;
-            currentEnemyPos.y = e1y;
-            currentEnemyPos.back = -1;  //the initial position of enemy
             BFSArray1.push_back( currentEnemyPos );
-
-            for(int i=0; i<BFSArray1.size(); i++){//for loop that fill the map until we fint the hero
-                if( BFSArray1[i].x == hx && BFSArray1[i].y == hy ){ //while filling the map, if we found the target(Hero)
-                    while( BFSArray1[i].back != -1 ){
-                        mapWithAvoidPath[BFSArray1[i].y][BFSArray1[i].x] = '#';//mark that path using #
-                        i = BFSArray1[i].back;//so that later when calculating escaping route, enemy will avoid that
-                    }
-                    break; //break the for loop that fill the map
-                }
-
-                fillTheMapEnemy1( BFSArray1[i].x+1, BFSArray1[i].y, i );
-                fillTheMapEnemy1( BFSArray1[i].x-1, BFSArray1[i].y, i );
-                fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y+1, i );
-                fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y-1, i );
-            }
-
-            memcpy( tmp_map, mapWithAvoidPath, sizeof(mapWithAvoidPath) );
-            BFSArray1.clear();
-            walk_queue1.clear();
-            //start calculating escaping route (enemy in sector 2, hero in sector 1, enemy escape to sector 4)
-            BFSArray1.push_back( currentEnemyPos );
-
+            //start calculating escaping route (enemy in sector 1, hero in sector 2, enemy escape to sector 3)
             for(int i=0; i<BFSArray1.size(); i++){//for loop that fill the map until we find the destination
                 if( BFSArray1[i].x == 29 && BFSArray1[i].y == 16 ){ //reached destination: sector 4 corner (lower right)
                     targetPath step;
@@ -460,33 +362,8 @@ void Enemy1Escape(int e1x, int e1y, int hx, int hy) {
         else if(hx>15&&hy<=8) {//hero in sector 2 (same sector)
             BFSArray1.clear();
             walk_queue1.clear();
-            walk currentEnemyPos;//store initial position of enemy
-            currentEnemyPos.x = e1x;
-            currentEnemyPos.y = e1y;
-            currentEnemyPos.back = -1;  //the initial position of enemy
             BFSArray1.push_back( currentEnemyPos );
-
-            for(int i=0; i<BFSArray1.size(); i++){//for loop that fill the map until we fint the hero
-                if( BFSArray1[i].x == hx && BFSArray1[i].y == hy ){ //while filling the map, if we found the target(Hero)
-                    while( BFSArray1[i].back != -1 ){
-                        mapWithAvoidPath[BFSArray1[i].y][BFSArray1[i].x] = '#';//mark that path using #
-                        i = BFSArray1[i].back;//so that later when calculating escaping route, enemy will avoid that
-                    }
-                    break; //break the for loop that fill the map
-                }
-
-                fillTheMapEnemy1( BFSArray1[i].x+1, BFSArray1[i].y, i );
-                fillTheMapEnemy1( BFSArray1[i].x-1, BFSArray1[i].y, i );
-                fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y+1, i );
-                fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y-1, i );
-            }
-
-            memcpy( tmp_map, mapWithAvoidPath, sizeof(mapWithAvoidPath) );
-            BFSArray1.clear();
-            walk_queue1.clear();
-            //start calculating escaping route (enemy in sector 2, hero in sector 1, enemy escape to sector 4)
-            BFSArray1.push_back( currentEnemyPos );
-
+            //start calculating escaping route (enemy in sector 1, hero in sector 2, enemy escape to sector 3)
             if(hx-hy>e1x-e1y) {//hero in the lower right position, then enemy escape to sector 1 (left)
                 for(int i=0; i<BFSArray1.size(); i++){//for loop that fill the map until we find the destination
                     if( BFSArray1[i].x == 1 && BFSArray1[i].y == 1 ){ //reached destination: sector 1 corner (upper left)
@@ -531,33 +408,8 @@ void Enemy1Escape(int e1x, int e1y, int hx, int hy) {
         else if(hx<=15&&hy>8) {//hero in sector 3
             BFSArray1.clear();
             walk_queue1.clear();
-            walk currentEnemyPos;//store initial position of enemy
-            currentEnemyPos.x = e1x;
-            currentEnemyPos.y = e1y;
-            currentEnemyPos.back = -1;  //the initial position of enemy
             BFSArray1.push_back( currentEnemyPos );
-
-            for(int i=0; i<BFSArray1.size(); i++){//for loop that fill the map until we fint the hero
-                if( BFSArray1[i].x == hx && BFSArray1[i].y == hy ){ //while filling the map, if we found the target(Hero)
-                    while( BFSArray1[i].back != -1 ){
-                        mapWithAvoidPath[BFSArray1[i].y][BFSArray1[i].x] = '#';//mark that path using #
-                        i = BFSArray1[i].back;//so that later when calculating escaping route, enemy will avoid that
-                    }
-                    break; //break the for loop that fill the map
-                }
-
-                fillTheMapEnemy1( BFSArray1[i].x+1, BFSArray1[i].y, i );
-                fillTheMapEnemy1( BFSArray1[i].x-1, BFSArray1[i].y, i );
-                fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y+1, i );
-                fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y-1, i );
-            }
-
-            memcpy( tmp_map, mapWithAvoidPath, sizeof(mapWithAvoidPath) );
-            BFSArray1.clear();
-            walk_queue1.clear();
-            //start calculating escaping route (enemy in sector 2, hero in sector 3, enemy escape to sector 2 corner)
-            BFSArray1.push_back( currentEnemyPos );
-
+            //start calculating escaping route (enemy in sector 1, hero in sector 2, enemy escape to sector 3)
             for(int i=0; i<BFSArray1.size(); i++){//for loop that fill the map until we find the destination
                 if( BFSArray1[i].x == 29&& BFSArray1[i].y == 1 ){ //reached destination: sector 2 corner (upper right)
                     targetPath step;
@@ -581,33 +433,8 @@ void Enemy1Escape(int e1x, int e1y, int hx, int hy) {
         else if(hx>15&&hy>8) {//hero in sector 4
             BFSArray1.clear();
             walk_queue1.clear();
-            walk currentEnemyPos;//store initial position of enemy
-            currentEnemyPos.x = e1x;
-            currentEnemyPos.y = e1y;
-            currentEnemyPos.back = -1;  //the initial position of enemy
             BFSArray1.push_back( currentEnemyPos );
-
-            for(int i=0; i<BFSArray1.size(); i++){//for loop that fill the map until we fint the hero
-                if( BFSArray1[i].x == hx && BFSArray1[i].y == hy ){ //while filling the map, if we found the target(Hero)
-                    while( BFSArray1[i].back != -1 ){
-                        mapWithAvoidPath[BFSArray1[i].y][BFSArray1[i].x] = '#';//mark that path using #
-                        i = BFSArray1[i].back;//so that later when calculating escaping route, enemy will avoid that
-                    }
-                    break; //break the for loop that fill the map
-                }
-
-                fillTheMapEnemy1( BFSArray1[i].x+1, BFSArray1[i].y, i );
-                fillTheMapEnemy1( BFSArray1[i].x-1, BFSArray1[i].y, i );
-                fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y+1, i );
-                fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y-1, i );
-            }
-
-            memcpy( tmp_map, mapWithAvoidPath, sizeof(mapWithAvoidPath) );
-            BFSArray1.clear();
-            walk_queue1.clear();
-            //start calculating escaping route (enemy in sector 2, hero in sector 4, enemy escape to sector 1)
-            BFSArray1.push_back( currentEnemyPos );
-
+            //start calculating escaping route (enemy in sector 1, hero in sector 2, enemy escape to sector 3)
             for(int i=0; i<BFSArray1.size(); i++){//for loop that fill the map until we find the destination
                 if( BFSArray1[i].x == 1&& BFSArray1[i].y == 1 ){ //reached destination: sector 1 corner (upper left)
                     targetPath step;
@@ -627,10 +454,256 @@ void Enemy1Escape(int e1x, int e1y, int hx, int hy) {
             }
             BFSArray1.clear();
         }//hero in sector 4 end
+    }//enemy in sector 2 end
 
+    else if(e1x<=15&&e1y>8) {// enemy in sector 3
+        if(hx<=15&&hy<=8) {//hero in sector 1
+            BFSArray1.clear();
+            walk_queue1.clear();
+            BFSArray1.push_back( currentEnemyPos );
+            //start calculating escaping route (enemy in sector 1, hero in sector 2, enemy escape to sector 3)
+            for(int i=0; i<BFSArray1.size(); i++){//for loop that fill the map until we find the destination
+                if( BFSArray1[i].x == 29 && BFSArray1[i].y == 16 ){ //reached destination: sector 4 corner (lower right)
+                    targetPath step;
+                    while( BFSArray1[i].back != -1 ){//before reaching the initial position of enemy itself
+                        step.x = BFSArray1[i].x;
+                        step.y = BFSArray1[i].y;
+                        walk_queue1.push_back( step );
+                        i = BFSArray1[i].back;
+                    }
+                    break;
+                }
 
-    }//enemy if sector 2 end
+                fillTheMapEnemy1( BFSArray1[i].x+1, BFSArray1[i].y, i );
+                fillTheMapEnemy1( BFSArray1[i].x-1, BFSArray1[i].y, i );
+                fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y+1, i );
+                fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y-1, i );
+            }
+            BFSArray1.clear();
+        }//hero in sector 1 end
 
+        else if(hx>15&&hy<=8) {//hero in sector 2
+            BFSArray1.clear();
+            walk_queue1.clear();
+            BFSArray1.push_back( currentEnemyPos );
+            //start calculating escaping route (enemy in sector 1, hero in sector 2, enemy escape to sector 3)
+            for(int i=0; i<BFSArray1.size(); i++){//for loop that fill the map until we find the destination
+                if( BFSArray1[i].x == 1 && BFSArray1[i].y == 16 ){ //reached destination: sector 3 corner (left bottom)
+                    targetPath step;
+                    while( BFSArray1[i].back != -1 ){//before reaching the initial position of enemy itself
+                        step.x = BFSArray1[i].x;
+                        step.y = BFSArray1[i].y;
+                        walk_queue1.push_back( step );
+                        i = BFSArray1[i].back;
+                    }
+                    break;
+                }
+
+                fillTheMapEnemy1( BFSArray1[i].x+1, BFSArray1[i].y, i );
+                fillTheMapEnemy1( BFSArray1[i].x-1, BFSArray1[i].y, i );
+                fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y+1, i );
+                fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y-1, i );
+            }
+            BFSArray1.clear();
+
+        }//hero in sector 2 end
+
+        else if(hx<=15&&hy>8) {//hero is sector 3(same sector)
+            BFSArray1.clear();
+            walk_queue1.clear();
+            BFSArray1.push_back( currentEnemyPos );
+            //start calculating escaping route (enemy in sector 1, hero in sector 2, enemy escape to sector 3)
+            if(hx-hy>e1x-e1y) {//hero in the lower right position, then enemy escape to sector 1 (left)
+                for(int i=0; i<BFSArray1.size(); i++){//for loop that fill the map until we find the destination
+                    if( BFSArray1[i].x == 1 && BFSArray1[i].y == 1 ){ //reached destination: sector 1 corner (upper left)
+                        targetPath step;
+                        while( BFSArray1[i].back != -1 ){//before reaching the initial position of enemy itself
+                            step.x = BFSArray1[i].x;
+                            step.y = BFSArray1[i].y;
+                            walk_queue1.push_back( step );
+                            i = BFSArray1[i].back;
+                        }
+                        break;
+                    }
+
+                    fillTheMapEnemy1( BFSArray1[i].x+1, BFSArray1[i].y, i );
+                    fillTheMapEnemy1( BFSArray1[i].x-1, BFSArray1[i].y, i );
+                    fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y+1, i );
+                    fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y-1, i );
+                }
+            }
+            else {//if(hx-hy<=e1x-e1y)  in the upper left position. then escape to sector 4 (downward)
+                for(int i=0; i<BFSArray1.size(); i++){//for loop that fill the map until we find the destination
+                    if( BFSArray1[i].x == 29 && BFSArray1[i].y == 16 ){ //reached destination: sector 2 corner (upper right)
+                        targetPath step;
+                        while( BFSArray1[i].back != -1 ){//before reaching the initial position of enemy itself
+                            step.x = BFSArray1[i].x;
+                            step.y = BFSArray1[i].y;
+                            walk_queue1.push_back( step );
+                            i = BFSArray1[i].back;
+                        }
+                        break;
+                    }
+
+                    fillTheMapEnemy1( BFSArray1[i].x+1, BFSArray1[i].y, i );
+                    fillTheMapEnemy1( BFSArray1[i].x-1, BFSArray1[i].y, i );
+                    fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y+1, i );
+                    fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y-1, i );
+                }
+            }
+            BFSArray1.clear();
+        }//hero is sector 3 end
+
+        else if(hx>15&&hy>8) {//hero in sector 4
+            BFSArray1.clear();
+            walk_queue1.clear();
+            BFSArray1.push_back( currentEnemyPos );
+            //start calculating escaping route (enemy in sector 1, hero in sector 2, enemy escape to sector 3)
+            for(int i=0; i<BFSArray1.size(); i++){//for loop that fill the map until we find the destination
+                if( BFSArray1[i].x == 1&& BFSArray1[i].y == 1 ){ //reached destination: sector 1 corner (upper left)
+                    targetPath step;
+                    while( BFSArray1[i].back != -1 ){//before reaching the initial position of enemy itself
+                        step.x = BFSArray1[i].x;
+                        step.y = BFSArray1[i].y;
+                        walk_queue1.push_back( step );
+                        i = BFSArray1[i].back;
+                    }
+                    break;
+                }
+
+                fillTheMapEnemy1( BFSArray1[i].x+1, BFSArray1[i].y, i );
+                fillTheMapEnemy1( BFSArray1[i].x-1, BFSArray1[i].y, i );
+                fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y+1, i );
+                fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y-1, i );
+            }
+            BFSArray1.clear();
+        }//hero in sector 4 end
+    }//enemy in sector 3 end
+
+    else {//if(e1x>15&&ely>8)//enemy in sector 4
+        if(hx<=15&&hy<=8) {//hero in sector 1
+            BFSArray1.clear();
+            walk_queue1.clear();
+            BFSArray1.push_back( currentEnemyPos );
+            //start calculating escaping route (enemy in sector 1, hero in sector 2, enemy escape to sector 3)
+            for(int i=0; i<BFSArray1.size(); i++){//for loop that fill the map until we find the destination
+                if( BFSArray1[i].x == 29 && BFSArray1[i].y == 16 ){ //reached destination: sector 4 corner (lower right)
+                    targetPath step;
+                    while( BFSArray1[i].back != -1 ){//before reaching the initial position of enemy itself
+                        step.x = BFSArray1[i].x;
+                        step.y = BFSArray1[i].y;
+                        walk_queue1.push_back( step );
+                        i = BFSArray1[i].back;
+                    }
+                    break;
+                }
+
+                fillTheMapEnemy1( BFSArray1[i].x+1, BFSArray1[i].y, i );
+                fillTheMapEnemy1( BFSArray1[i].x-1, BFSArray1[i].y, i );
+                fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y+1, i );
+                fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y-1, i );
+            }
+            BFSArray1.clear();
+        }//hero in sector 1 end
+
+        else if(hx>15&&hy<=8) {//hero in sector 2
+            BFSArray1.clear();
+            walk_queue1.clear();
+            BFSArray1.push_back( currentEnemyPos );
+            //start calculating escaping route (enemy in sector 1, hero in sector 2, enemy escape to sector 3)
+            for(int i=0; i<BFSArray1.size(); i++){//for loop that fill the map until we find the destination
+                if( BFSArray1[i].x == 1 && BFSArray1[i].y == 16 ){ //reached destination: sector 3 corner (left bottom)
+                    targetPath step;
+                    while( BFSArray1[i].back != -1 ){//before reaching the initial position of enemy itself
+                        step.x = BFSArray1[i].x;
+                        step.y = BFSArray1[i].y;
+                        walk_queue1.push_back( step );
+                        i = BFSArray1[i].back;
+                    }
+                    break;
+                }
+
+                fillTheMapEnemy1( BFSArray1[i].x+1, BFSArray1[i].y, i );
+                fillTheMapEnemy1( BFSArray1[i].x-1, BFSArray1[i].y, i );
+                fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y+1, i );
+                fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y-1, i );
+            }
+            BFSArray1.clear();
+
+        }//hero in sector 2 end
+
+        else if(hx<=15&&hy>8) {//hero in sector 3
+            BFSArray1.clear();
+            walk_queue1.clear();
+            BFSArray1.push_back( currentEnemyPos );
+            //start calculating escaping route (enemy in sector 1, hero in sector 2, enemy escape to sector 3)
+            for(int i=0; i<BFSArray1.size(); i++){//for loop that fill the map until we find the destination
+                if( BFSArray1[i].x == 29&& BFSArray1[i].y == 1 ){ //reached destination: sector 2 corner (upper right)
+                    targetPath step;
+                    while( BFSArray1[i].back != -1 ){//before reaching the initial position of enemy itself
+                        step.x = BFSArray1[i].x;
+                        step.y = BFSArray1[i].y;
+                        walk_queue1.push_back( step );
+                        i = BFSArray1[i].back;
+                    }
+                    break;
+                }
+
+                fillTheMapEnemy1( BFSArray1[i].x+1, BFSArray1[i].y, i );
+                fillTheMapEnemy1( BFSArray1[i].x-1, BFSArray1[i].y, i );
+                fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y+1, i );
+                fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y-1, i );
+            }
+            BFSArray1.clear();
+        }//hero in sector 3 end
+
+        else if(hx>15&&hy>8) {//hero in sector 4(Same Sector)
+            BFSArray1.clear();
+            walk_queue1.clear();
+            BFSArray1.push_back( currentEnemyPos );
+            //start calculating escaping route (enemy in sector 1, hero in sector 2, enemy escape to sector 3)
+            if(hx+hy>e1x+e1y) {//in the upper right position, then escape to sector 3 (downward)
+                for(int i=0; i<BFSArray1.size(); i++){//for loop that fill the map until we find the destination
+                    if( BFSArray1[i].x == 1 && BFSArray1[i].y == 16 ){ //reached destination: sector 3 corner (lower left)
+                        targetPath step;
+                        while( BFSArray1[i].back != -1 ){//before reaching the initial position of enemy itself
+                            step.x = BFSArray1[i].x;
+                            step.y = BFSArray1[i].y;
+                            walk_queue1.push_back( step );
+                            i = BFSArray1[i].back;
+                        }
+                        break;
+                    }
+
+                    fillTheMapEnemy1( BFSArray1[i].x+1, BFSArray1[i].y, i );
+                    fillTheMapEnemy1( BFSArray1[i].x-1, BFSArray1[i].y, i );
+                    fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y+1, i );
+                    fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y-1, i );
+                }
+            }
+            else {//if(hx+hy<=e1x+e1y)  in the lower left position. then escape to sector 2 (rightward)
+                for(int i=0; i<BFSArray1.size(); i++){//for loop that fill the map until we find the destination
+                    if( BFSArray1[i].x == 29 && BFSArray1[i].y == 1 ){ //reached destination: sector 2 corner (upper right)
+                        targetPath step;
+                        while( BFSArray1[i].back != -1 ){//before reaching the initial position of enemy itself
+                            step.x = BFSArray1[i].x;
+                            step.y = BFSArray1[i].y;
+                            walk_queue1.push_back( step );
+                            i = BFSArray1[i].back;
+                        }
+                        break;
+                    }
+
+                    fillTheMapEnemy1( BFSArray1[i].x+1, BFSArray1[i].y, i );
+                    fillTheMapEnemy1( BFSArray1[i].x-1, BFSArray1[i].y, i );
+                    fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y+1, i );
+                    fillTheMapEnemy1( BFSArray1[i].x, BFSArray1[i].y-1, i );
+                }
+            }
+            BFSArray1.clear();
+
+        }//hero in sector 4. end
+    }//enemy in sector 4 end
 }
 
 
@@ -654,16 +727,16 @@ int main() {
         cin >> difficulty;
         switch (difficulty) {
         case 'E': case 'e':
-            speedmod = 3;
+            speedmod = 4;
         break;
         case 'N': case 'n':
-            speedmod = 2;
+            speedmod = 3;
         break;
         case 'H': case 'h':
-            speedmod = 1;
+            speedmod = 2;
         break;
         default:
-            speedmod = 2;
+            speedmod = 3;
         }
         //End of setting speedmode
 
@@ -673,13 +746,22 @@ int main() {
         gotoxy( hx, hy );
         cout << "H";//locate and show hero
 
-        FindPathEnemy1( e1x,e1y,hx,hy );//e1x e1y: enemy 1 position, x y: hero position
-        FindPathEnemy2( e2x,e2y,hx,hy ); //find the path for second enemy to reach hero
         bool thisRound=true;//start the new round. if later player is dead, then thisRound reset to false
         bool escape = false;// escape mode set to false. later if score exceeds 100, enemies enter escape mode
+
+        if(!escape) {
+            FindPathEnemy1( e1x,e1y,hx,hy );//e1x e1y: enemy 1 position, x y: hero position
+            FindPathEnemy2( e2x,e2y,hx,hy ); //find the path for second enemy to reach hero
+        }
+        else if(escape) {
+            Enemy1Escape(e1x,e1y,hx,hy);
+        }
+
         while(thisRound){
             if(pts>10) { //if score exceeds 100 pts, enemies start to escape from hero (escape mode)
                 escape=true;
+                speedmod = 1;
+                gotoxy(e2x, e2y); cout<<" ";
             }
             gotoxy( 32, 1 ); cout << pts;//display score
             Sleep( 90 ); //delay
@@ -705,6 +787,7 @@ int main() {
                 if( gameMap[hy][hx+1] == '.' ){ gameMap[hy][hx+1] = ' '; hx++; pts++;}
                 else if( gameMap[hy][hx+1] == ' ' ) hx++;
             }
+
             gotoxy( hx,hy ); cout << "H";
             //End of Updating the location of Hero
 
@@ -719,7 +802,7 @@ int main() {
                     FindPathEnemy1( e1x,e1y,hx,hy );// then reset path for both enemies
                     FindPathEnemy2( e2x,e2y,hx,hy );// refind path for second enemy
                 }
-                if( frame==speedmod && walk_queue1.size() != 0 ){
+                if( frame>=speedmod && walk_queue1.size() != 0 ){
                     frame=0; //reset frame, so it wont overflow
                     e1x = walk_queue1.back().x;
                     e1y = walk_queue1.back().y;
@@ -777,33 +860,57 @@ int main() {
             }//end of enemy chasing mode algorithm
 
             else if(escape) {//if the enemies are in escape mode (hero in chasing mode)
+
                 gameMap[e1y][e1x] = '.';//let original map has a dot there, then hero can eat it even if the map is refreshed (tmp_map)
                 gotoxy( e1x, e1y ); cout << ".";//put cursor there and display that dot
-                //gameMap[e2y][e2x] = '.';//let original map has a dot there, then hero can eat it even if the map is refreshed (tmp_map)
-                //gotoxy( e2x, e2y ); cout << ".";//put cursor there and display that dot
 
-                if( old_hx != hx || old_hy != hy ){//if user moved(old position not equals to new position
-                    Enemy1Escape( e1x,e1y,hx,hy );// then reset path for both enemies
-                    //Enemy2Escape( e2x,e2y,hx,hy );// refind path for second enemy
-                }
-                if( frame==speedmod && walk_queue1.size() != 0 ){
+                Enemy1Escape( e1x,e1y,hx,hy );// then reset path for both enemies
+
+                if( frame>=speedmod && walk_queue1.size() != 0 ){
                     frame=0; //reset frame, so it wont overflow
                     e1x = walk_queue1.back().x;
                     e1y = walk_queue1.back().y;
                     walk_queue1.pop_back();
-                    //int e2x_tmp=e2x; int e2y_tmp=e2y; //temporarily save the second enemy's location
-                    //e2x = escape_queue2.back().x;//update the second enemy
-                    //e2y = escape_queue2.back().y;
-                    //if(e1x==e2x&&e1y==e2y) {//if the updated second enemy's location is same as the first enemy's location
-                    //    e2x = e2x_tmp;//then the second enemy stop moving for one step if order to prevent colliding with the
-                    //    e2y = e2y_tmp;//first enemy
-                    //}
-                    //else {
-                    //    escape_queue2.pop_back();
-                    //}
                 }
                 gotoxy( e1x, e1y ); cout << "E";
-                //gotoxy( e2x, e2y ); cout << "E";
+
+                if(e1x == hx && e1y==hy) {
+                    char decision;
+                    system("cls");
+                    cout<<"You WIN and your score is: "<<pts<<endl;
+                    cout<<"continue play?\n type 'q' to quit\n type other to continue"<<endl;
+                    cin>>decision;
+                    //got the decision character, then either restart game or quit game
+                    if(decision == 'q' || decision == 'Q') {//if choose to quit
+                        thisRound=false;//start from the beginning of main function
+                        play = false; //exit!
+                    }
+                    else { //otherwise if user still want to play, jump out from 'this round' and reset map
+                        thisRound=false;//start from beginning
+                        char newMap[18][32] = {
+                            "+#############################+",
+                            "|                             |",
+                            "|                             |",
+                            "|## ########### ##   ###### ##|",
+                            "|                             |",
+                            "| |#######  |           |     |",
+                            "| |         | |###      |  |  |",
+                            "|   ######  |        ## |     |",
+                            "| |         | |###         |  |",
+                            "| |##### ###         ##       |",
+                            "|            ####  ####### ###|",
+                            "|                             |",
+                            "|# ### ####      ###   #### ##|",
+                            "|                             |",
+                            "|      ###################    |",
+                            "|                             |",
+                            "|                             |",
+                            "+#############################+"
+                            }; //reset map, original map may have '.' there
+                        memcpy( tmp_map, newMap, sizeof(newMap) ); //reset gameMap
+                        memcpy( gameMap, newMap, sizeof(newMap) ); //reset tmp_map
+                    }
+                }
             }//end of escape mode algorithm
         } //while thisRound
     } //while play
